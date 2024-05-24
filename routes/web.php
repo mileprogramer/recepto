@@ -28,3 +28,11 @@ Route::get("/register", function(){
 Route::get("/admin", function(){
     return view("admin.index");
 });
+
+Route::get("/admin/not-approved-recipes", function(){
+    return view("admin.index");
+});
+
+Route::get("/admin/approved-recipes", function(){
+    return view("admin.index");
+});

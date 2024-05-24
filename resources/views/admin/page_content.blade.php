@@ -1,3 +1,3 @@
 @include('partials.css')
 @include('partials.header')
-@include('admin.table')
+@include('admin.select_recipes')
