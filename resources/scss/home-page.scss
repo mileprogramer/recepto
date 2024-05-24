@@ -12,3 +12,12 @@
         background-color: rgba(white, 0.5);
     }
 }
+.ingredients{
+    &-input-parent input{
+        width: 30%;
+    }
+    button{
+        width: 30%;
+    }
+}
+
