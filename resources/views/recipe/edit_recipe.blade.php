@@ -1,7 +1,7 @@
 @extends('master')
 
 @section('title')
-    Add recipe
+    Edit recipe
 @endsection
 
 @section('css')
@@ -11,6 +11,6 @@
 @section('main-wrapper')
     @include('partials.header')
     <div class="container">
-        @include('recipe.form_add_recipe', ["units"=>$units, "categories"=>$categories])
+        @include('recipe.form_edit_recipe', ["units"=>$units, "categories"=>$categories, "recipe"=>$recipe])
     </div>
 @endsection
