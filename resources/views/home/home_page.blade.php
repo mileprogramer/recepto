@@ -5,9 +5,9 @@
 @endsection
 
 @section('css')
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/addIngredient.js'])
 @endsection
 
 @section('main-wrapper')
-    @include('home.page_content')
+    @include('home.page_content', ["units"=> $units, "categories"=>$categories])
 @endsection

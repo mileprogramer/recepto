@@ -2,8 +2,12 @@
     <div class="container">
         <h1><a href="/">Recepto</a></h1>
         <ul class="navbar-nav flex-row gap-2">
-            <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-            <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+            @if (Illuminate\Support\Facades\Auth::check())
+                <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+            @else
+                <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+                <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+            @endif
         </ul>
     </div>
 </nav>
