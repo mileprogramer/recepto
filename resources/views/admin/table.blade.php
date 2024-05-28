@@ -1,91 +1,66 @@
 
 <div class="container">
+    @if ($approved_view)
+        <h1>Approved recipes</h1>
+    @else
+        <h1>Not approved recipes</h1>
+    @endif
     <table class="table">
         <thead>
             <td>Name recipe</td>
             <td>Is for breakfast</td>
-            <td>Is for snack</td>
             <td>Is for dinner</td>
             <td>Is for lunch</td>
+            <td>Is for snack</td>
             <td>Category</td>
             <td>Calories</td>
             <td>Protein</td>
             <td>Fat</td>
             <td>Carbs</td>
-            <td>How to prepare</td>
+            <td>Description</td>
             <td>Ingredients</td>
             <td>Actions</td>
         </thead>
         <tbody>
-            <tr>
-                <td>Chicken in something</td>
-                <td><button class="btn btn-danger">No</button></td>
-                <td><button class="btn btn-danger">No</button></td>
-                <td><button class="btn btn-success">Yes</button></td>
-                <td><button class="btn btn-success">Yes</button></td>
-                <td>Meat</td>
-                <td>1000</td>
-                <td>20</td>
-                <td>300</td>
-                <td>300</td>
-                <td>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Officia, architecto! Dolore illo, voluptatum tempora accusamus eum magnam deserunt aspernatur neque, dignissimos officiis commodi ea, obcaecati libero placeat sunt officia amet.</td>
-                <td>
-                    Chicken: 300g<br>
-                    Sail: 30g<br>
-                    Sugar: 30g<br>
-                    Chicken: 300g<br>
-                </td>
-                <td>
-                    <button class="btn btn-danger">Delete</button>
-                    <button class="btn btn-warning my-3">Edit</button>
-                </td>
-            </tr>
-            <tr>
-                <td>Chicken in something</td>
-                <td><button class="btn btn-danger">No</button></td>
-                <td><button class="btn btn-danger">No</button></td>
-                <td><button class="btn btn-success">Yes</button></td>
-                <td><button class="btn btn-success">Yes</button></td>
-                <td>Meat</td>
-                <td>1000</td>
-                <td>20</td>
-                <td>300</td>
-                <td>300</td>
-                <td>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Officia, architecto! Dolore illo, voluptatum tempora accusamus eum magnam deserunt aspernatur neque, dignissimos officiis commodi ea, obcaecati libero placeat sunt officia amet.</td>
-                <td>
-                    Chicken: 300g<br>
-                    Sail: 30g<br>
-                    Sugar: 30g<br>
-                    Chicken: 300g<br>
-                </td>
-                <td>
-                    <button class="btn btn-danger">Delete</button>
-                    <button class="btn btn-warning my-3">Edit</button>
-                </td>
-            </tr>
-            <tr>
-                <td>Chicken in something</td>
-                <td><button class="btn btn-danger">No</button></td>
-                <td><button class="btn btn-danger">No</button></td>
-                <td><button class="btn btn-success">Yes</button></td>
-                <td><button class="btn btn-success">Yes</button></td>
-                <td>Meat</td>
-                <td>1000</td>
-                <td>20</td>
-                <td>300</td>
-                <td>300</td>
-                <td>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Officia, architecto! Dolore illo, voluptatum tempora accusamus eum magnam deserunt aspernatur neque, dignissimos officiis commodi ea, obcaecati libero placeat sunt officia amet.</td>
-                <td>
-                    Chicken: 300g<br>
-                    Sail: 30g<br>
-                    Sugar: 30g<br>
-                    Chicken: 300g<br>
-                </td>
-                <td>
-                    <button class="btn btn-danger">Delete</button>
-                    <button class="btn btn-warning my-3">Edit</button>
-                </td>
-            </tr>
+            @foreach ($recipes as $recipe)
+                <tr>
+                    <td>{{$recipe->name_recipe}}</td>
+                    @php
+                        $meal_type = [
+                            $recipe->is_breakfast,
+                            $recipe->is_dinner,
+                            $recipe->is_lunch,
+                            $recipe->is_snack,
+                        ];
+                    @endphp
+                    @foreach ($meal_type as $single_meal)
+                        @if ($single_meal)
+                            <td><button class="btn btn-success">Yes</button></td>
+                        @else
+                            <td><button class="btn btn-danger">No</button></td>
+                        @endif
+                    @endforeach
+                    <td>{{ $recipe->name_category }}</td>
+                    <td>{{ $recipe->calories ?? null }}</td>
+                    <td>{{ $recipe->protein }}</td>
+                    <td>{{ $recipe->fat }}</td>
+                    <td>{{ $recipe->carbs }}</td>
+                    <td>{{ $recipe->description }}</td>
+                    <td>
+                        @for ($i = 0; $i < count($recipe->ingredients); $i++)
+                            {{ $recipe->ingredients[$i] }}: {{ $recipe->quantities[$i] }}{{ $recipe->units[$i] }}<hr>
+                        @endfor
+                    </td>
+                    <td>
+                        @if (!$approved_view)
+                            <a href="/admin/not-approved-recipes/approve/{{$recipe->id_recipe}}" class="btn btn-success">Approved</a>
+                        @endif
+                        <a href="/admin/recipe/delete/{{$recipe->id_recipe}}" class="btn btn-danger delete-recipe">Delete</a>
+                        <a href="/admin/recipe/edit/{{$recipe->id_recipe}}" class="btn btn-warning my-3">Edit</a>
+                    </td>
+                </tr>
+            @endforeach
+
         </tbody>
     </table>
 </div>
