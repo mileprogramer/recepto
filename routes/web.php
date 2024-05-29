@@ -3,8 +3,8 @@
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\RegisterController;
-use Illuminate\Auth\Recaller;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\Admin;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,9 +19,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [RecipeController::class, "index"]);
 
-Route::get("/add-recipe", [RecipeController::class, "create"]);
-Route::post("/add-recipe", [RecipeController::class, "store"]);
-
 Route::post("/search", [RecipeController::class, 'search']);
 
 // REGISTER 
@@ -29,33 +26,23 @@ Route::get("/register",[RegisterController::class, 'create']);
 Route::post("/register",[RegisterController::class, 'store']);
 
 // LOGIN 
-Route::get("/login", [LoginController::class, 'loginView']);
+Route::get("/login", [LoginController::class, 'loginView'])->name("login");
 Route::post("/login", [LoginController::class, 'login']);
 
 // LOGOUT
 Route::get("/logout", [LoginController::class, 'logout']);
 
-// ADMIN
-Route::get("/admin", function(){
-    return view("admin.index");
-});
-
-Route::get('/admin/approved-recipes', [RecipeController::class, "approvedRecipes"]);
-Route::get('/admin/not-approved-recipes', [RecipeController::class, "notApprovedRecipes"]);
-Route::get('/admin/not-approved-recipes/approve/{id}', [RecipeController::class, "approve"]);
-Route::get('/admin/recipe/delete/{id}', [RecipeController::class, "destroy"]);
-Route::get('/admin/recipe/edit/{id}', [RecipeController::class, "edit"]);
-Route::post('/admin/recipe/edit/', [RecipeController::class, "update"]);
-/* 
 Route::middleware(['admin'])->group(function () {
-    Route::get('/admin', function () {
-        return view('admin.index');
-    });
-    Route::get('/admin/not-approved-recipes', function () {
-        return view('admin.approved-recipes');
-    });
-
-}); */
+    Route::view('/admin', 'admin.index');
+    Route::get('/admin/approved-recipes', [RecipeController::class, "approvedRecipes"]);
+    Route::get('/admin/not-approved-recipes', [RecipeController::class, "notApprovedRecipes"]);
+    Route::get('/admin/not-approved-recipes/approve/{id}', [RecipeController::class, "approve"]);
+    Route::get('/admin/recipe/delete/{id}', [RecipeController::class, "destroy"]);
+    Route::get('/admin/recipe/edit/{id}', [RecipeController::class, "edit"]);
+    Route::post('/admin/edit-recipe', [RecipeController::class, "update"]);
+    Route::get("/add-recipe", [RecipeController::class, "create"]);
+    Route::post("/add-recipe", [RecipeController::class, "store"]);
+});
 
 
 
