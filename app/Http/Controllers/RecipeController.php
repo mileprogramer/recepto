@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -154,7 +155,7 @@ class RecipeController extends Controller
     {
         $recipes_data = DB::select("CALL NOT_APPROVED_RECIPES()");
         $recipes = $this->groupByRecipe($recipes_data);
-                $units = DB::select("CALL GET_UNITS()");
+        $units = DB::select("CALL GET_UNITS()");
         $categories = DB::select("CALL GET_CATEGORIES()");
         return view('admin.not_approved_recipes', compact("recipes"));
     }
@@ -162,7 +163,7 @@ class RecipeController extends Controller
     public function approve(string $id)
     {
 
-        DB::statement("CALL APPROVE_RECIPE(?)", $id);
+        DB::statement("CALL APPROVE_RECIPE(?)", [$id]);
         return redirect()->back()->with(["success"=>"Successfully approved recipe"]);
 
     }
@@ -184,13 +185,13 @@ class RecipeController extends Controller
         $recipe = $this->groupByRecipe($recipe)[$id];
         $units = DB::select("CALL GET_UNITS()");
         $categories = DB::select("CALL GET_CATEGORIES()");
-        return view("recipe.edit_recipe", compact("recipe", "units", "categories"));
+        return view("recipe.edit_recipe", compact("recipe", "units", "categories"));     
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request)
     {
         $request->validate([
             "id_recipe" => "required|numeric",
@@ -215,10 +216,11 @@ class RecipeController extends Controller
         }
 
         try {
+
             DB::statement(
                 "CALL EDIT_RECIPE_INFO(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
-                    1,
+                    $request->input("id_recipe"),
                     $request->input("name_recipe"),
                     $request->input("description"),
                     $request->input("calories"),
@@ -232,16 +234,25 @@ class RecipeController extends Controller
                     $request->input("time_cook_meal_unit")
                 ]
             );
-
-            // call procedure delete everything from recipes_ingredients
-            // call procedure delete everything from recies_meal_types
+            
             $id_recipe = $request->input("id_recipe");
-
+            $is_success = 0;
+            // call procedure delete everything from recipes_ingredients
+            $result = DB::select("CALL DELETE_INGREDIENTS_IN_RECIPE(?, ?)", [$id_recipe, $is_success]);
+            if(!isset($result))
+            {
+                throw new Exception("Error happend during deleting ingredients $result");
+            }
+            // call procedure delete everything from recies_meal_types
+            $result = DB::select("CALL DELETE_MEALS_FOR_RECIPE(?, ?)", [$id_recipe, $is_success]);
+            if(!isset($result))
+            {
+                throw new Exception("Error happend deleting meals $result");
+            }
             // insert ingredients if there is not in the db
             foreach ($request->input("ingredients") as $ingredient) {
                 DB::statement("CALL INSERT_INGREDIENT(?)", [strtolower($ingredient)]);
             }
-
             // insert is lunch, dinner, snack, breakfast
             foreach ($request->input("meal_type") as $meal_type) {
                 DB::statement("CALL INSERT_MEAL_TYPE(?, ?)", [$id_recipe, $meal_type]);
@@ -258,7 +269,7 @@ class RecipeController extends Controller
                 ]);
                 $number_of_qunatity_unit++;
             }
-            return redirect()->back()->with("success", "Successfully added new recipe");
+            return redirect()->back()->with("success", "Successfully edited new recipe");
         } catch (\Exception $e) {
             // Handle the error
             return response()->json(['error' => $e->getMessage()], 400);
@@ -270,7 +281,8 @@ class RecipeController extends Controller
      */
     public function destroy(string $id)
     {
-        DB::statement("CALL DELETE_RECIPE(?)", $id);
+        DB::statement("CALL DELITE_RECIPE(?)", [$id]);
+        return redirect()->back()->with(["success"=>"Succesfully deleted recipe"]);
     }
 
     private function groupByRecipe(array $recipes_data)
