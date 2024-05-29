@@ -5,6 +5,11 @@
     @else
         <h1>Not approved recipes</h1>
     @endif
+    @if (session("success"))
+        <div class="alert alert-success">
+            <li>{{session("success")}}</li>
+        </div>
+    @endif
     <table class="table">
         <thead>
             <td>Name recipe</td>

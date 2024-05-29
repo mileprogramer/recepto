@@ -1,4 +1,4 @@
-<form action="/edit-recipe" method="POST">
+<form action="/admin/edit-recipe" method="POST">
     @csrf
     <h1 class="mt-3">Edit the recipe</h1>
     @if ($errors->any())
@@ -61,7 +61,7 @@
         <h4>Ingredients</h4>
         <div id="ingredients-container">
             @for ($i = 0; $i < count($recipe->ingredients); $i++)
-                <div class="row">
+                <div class="row pt-3">
                     <div class="col-4">
                         <p class="d-inline">Name of ingredient</p>
                         <input class="form-control" type="text" name="ingredients[]" value="{{$recipe->ingredients[$i]}}">
@@ -78,6 +78,10 @@
                                 <option {{ $unit->name_unit === $recipe->units[$i]? "selected": "" }} value="{{$unit->id }}">{{ $unit->name_unit }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="col-2">
+                        <p></p>
+                        <input class="w-100 btn btn-danger w-10 col-4" type='button' value='Delete ingredient'/>
                     </div>
                 </div>
             @endfor
@@ -101,7 +105,7 @@
         </div>
         <div class="form-group col-2">
             <p class="d-inline">Carbs</p>
-            <input class="form-control"  type="text" name="carbs" value="{{$recipe->protein}}">
+            <input class="form-control"  type="text" name="carbs" value="{{$recipe->carbs}}">
         </div>
     </div>
 
@@ -110,7 +114,7 @@
         <select name="category" class="form-select">
             <option value="-">Choose category</option>
             @foreach ($categories as $category)
-                <option {{ $category->name_category === $recipe->category? "selected": "" }} value="{{ $category->id }}">{{ $category->name_category }}</option>
+                <option {{ $category->name_category === $recipe->name_category? "selected": "" }} value="{{ $category->id }}">{{ $category->name_category }}</option>
             @endforeach
         </select>
     </div>

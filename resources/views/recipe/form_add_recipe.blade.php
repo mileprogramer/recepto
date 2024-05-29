@@ -70,6 +70,10 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-2">
+                    <p></p>
+                    <input class="w-100 btn btn-danger w-10 col-4" type='button' value='Delete ingredient'/>
+                </div>
             </div>
         </div>
         <button id="add-ingredient" type="button" class="btn btn-primary my-3">Add ingredient</button>
