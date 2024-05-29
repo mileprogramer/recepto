@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('ingredients', function (Blueprint $table) {
             $table->id();
-            $table->string("name_ingredient");
+            $table->string("name_ingredient")->collation('utf8mb4_unicode_ci');
             $table->timestamps();
         });
     }
