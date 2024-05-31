@@ -19,7 +19,7 @@ use App\Http\Middleware\Admin;
 
 Route::get('/', [RecipeController::class, "index"]);
 
-Route::post("/search", [RecipeController::class, 'search']);
+Route::get("/search", [RecipeController::class, 'search']);
 
 // REGISTER 
 Route::get("/register",[RegisterController::class, 'create']);
