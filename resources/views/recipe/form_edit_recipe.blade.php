@@ -148,9 +148,9 @@
                     <p>Unit</p>
                     <select name="time_cook_meal_unit" class="form-select">
                         <option value="">Choose unit</option>
-                        @foreach ($units as $unit)                            
+                        @foreach ($units as $unit)
                             @if ($unit->name_unit === "hour" || $unit->name_unit === "minutes")
-                                <option {{ $recipe->id_cook_time_unit === $unit->id? "selected": "" }} value="{{$unit->id }}">{{ $unit->name_unit }}</option>
+                            <option {{ $recipe->id_prep_time_unit === $unit->id? "selected": "" }} value="{{$unit->id }}">{{ $unit->name_unit }}</option>
                             @endif
                         @endforeach
                     </select>
