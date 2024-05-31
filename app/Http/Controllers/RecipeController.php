@@ -213,7 +213,8 @@ class RecipeController extends Controller
         $result = DB::select($query, $bindings);
         $recipes = $this->groupByRecipe($result);
         if (empty($result)) {
-            return redirect()->back()->withErrors("There is not recipe with these requirements");
+            return redirect("/#search-message")->with(
+                ["no-recipe"=>"There is not recipe with these requirements. Do you want to add recipe"]);
         }
         return view("search_result.page_content", compact("recipes"));
     }
