@@ -8,6 +8,12 @@
             @endforeach
         </div>
     @endif
+    @if (session("no-recipe"))
+        <div class="alert alert-warning" id="search-message">
+            {{session("no-recipe")}}
+            <a href="/add-recipe" class="btn btn-info">Add recipe</a>
+        </div>
+    @endif
     <form action="/search" method="GET">
         <div class="ingredients row p-3">
             <h4 class="col-2">Ingredients</h4>
