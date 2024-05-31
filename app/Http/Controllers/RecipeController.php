@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
@@ -61,7 +62,7 @@ class RecipeController extends Controller
             DB::statement(
                 "CALL ADD_RECIPE_INFO(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
-                    1,
+                    Auth::id(),
                     $request->input("name_recipe"),
                     $request->input("description"),
                     $request->input("calories"),
@@ -107,41 +108,116 @@ class RecipeController extends Controller
         }
     }
 
-
     public function search(Request $request)
     {
-/*         $range = 0.1;
+        $range = 0.1; // for calories, carbs, fat, protein
         $search_params = [
             "name_recipe",
             "calories",
             "fat",
             "carbs",
-            "category"
+            "protein",
+            "id_category"
         ];
-    
+
         $bindings = [];
-        $params = [];
-    
+        $where = ["WHERE r.approved = 1"]; // Initial dummy condition for easier concatenation
+
         foreach ($search_params as $key) {
             if ($request->filled($key)) {
-                if ($key === "calories" || $key === "fat" || $key === "carbs") {
-                    // search between +-10%
-                    $bindings[] = $request->input($key) - ($request->input($key) * $range);
-                    $bindings[] = $request->input($key) + ($request->input($key) * $range);
+                if ($key === "calories" || $key === "fat" || $key === "carbs" || $key === "protein") {
+                    $bindings[] = $request->input($key) - ($request->input($key) * $range); // min
+                    $bindings[] = $request->input($key) + ($request->input($key) * $range); // max
+                    $where[] = "$key BETWEEN ? AND ?";
                 } else {
+                    $where[] = "$key = ?";
                     $bindings[] = $request->input($key);
                 }
             }
         }
 
-        $result = DB::select($query, $params);
-        dd($result);
-        if (empty($result)) {
-            return redirect()->back()->withErrors("There is no recipe with these requirements");
+        if ($request->filled("ingredients")) {
+            $ingredients = $request->input("ingredients");
+            $number_of_ingredients = count($ingredients);
+            $placeholders = implode(', ', array_fill(0, $number_of_ingredients, '?'));
+
+            $where[] = "r.id IN (
+                SELECT ri.id_recipe
+                FROM recipes_ingredients ri
+                INNER JOIN ingredients i ON ri.id_ingredient = i.id
+                WHERE i.name_ingredient IN ($placeholders)
+                GROUP BY ri.id_recipe
+                HAVING COUNT(DISTINCT i.id) = ?
+            )";
+
+            $bindings = array_merge($bindings, $ingredients);
+            $bindings[] = $number_of_ingredients;
         }
-     */
-        // Handle the result
+
+        $whereText = implode(' AND ', $where);
+
+        $query = "
+        SELECT 
+            r.id AS id_recipe,
+            r.name_recipe AS name_recipe,
+            cat.name_category AS name_category,
+            r.description AS description,
+            r.carbs AS carbs,
+            r.fat AS fat,
+            r.calories AS calories,
+            r.protein AS protein,
+            MAX(CASE WHEN mt.meal_type = 'breakfast' THEN 1 ELSE 0 END) AS is_breakfast,
+            MAX(CASE WHEN mt.meal_type = 'snack' THEN 1 ELSE 0 END) AS is_snack,
+            MAX(CASE WHEN mt.meal_type = 'lunch' THEN 1 ELSE 0 END) AS is_lunch,
+            MAX(CASE WHEN mt.meal_type = 'dinner' THEN 1 ELSE 0 END) AS is_dinner,
+            ri.quantity AS quantity,
+            i.name_ingredient AS name_ingredient,
+            uni.name_unit,
+            r.prep_time AS prep_time,
+            r.cook_time AS cook_time,
+            r.id_prep_time_unit AS id_prep_time_unit,
+            r.id_cook_time_unit AS id_cook_time_unit
+        FROM 
+            RECIPES r
+        INNER JOIN
+            categories cat ON r.id_category = cat.id
+        INNER JOIN
+            RECIPE_MEAL rmt ON r.id = rmt.id_recipe
+        INNER JOIN 
+            MEAL_TYPES mt ON rmt.id_meal_type = mt.id
+        LEFT JOIN 
+            RECIPES_INGREDIENTS ri ON r.id = ri.id_recipe
+        INNER JOIN 
+            UNITS uni ON ri.id_unit_quantity = uni.id
+        LEFT JOIN 
+            INGREDIENTS i ON ri.id_ingredient = i.id
+        $whereText
+        GROUP BY
+            r.id,
+            r.name_recipe,
+            r.description,
+            cat.name_category,
+            r.carbs,
+            r.fat,
+            r.calories,
+            r.protein,
+            ri.quantity,
+            i.name_ingredient,
+            uni.name_unit,
+            r.prep_time,
+            r.cook_time,
+            r.id_prep_time_unit,
+            r.id_cook_time_unit;
+        ";
+
+        $result = DB::select($query, $bindings);
+        $recipes = $this->groupByRecipe($result);
+        if (empty($result)) {
+            return redirect()->back()->withErrors("There is not recipe with these requirements");
+        }
+        return view("search_result.page_content", compact("recipes"));
     }
+
 
 
     public function approvedRecipes()
@@ -234,7 +310,7 @@ class RecipeController extends Controller
                     $request->input("time_cook_meal_unit")
                 ]
             );
-            
+
             $id_recipe = $request->input("id_recipe");
             $is_success = 0;
             // call procedure delete everything from recipes_ingredients
